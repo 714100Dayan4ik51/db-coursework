@@ -1,0 +1,1732 @@
+//Форма Авторизации
+using Microsoft.SqlServer.Server;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Data.SqlClient;
+using System.Diagnostics;
+using System.Drawing;
+using System.Linq;
+using System.Net;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Realty
+{
+    public partial class FormAuthorization : Form
+    {
+        private SqlConnection SqlConnect = new SqlConnection(Properties.Settings.Default.connectionRealty);
+        public FormAuthorization()
+        {
+            InitializeComponent();
+        }
+
+        string placeholderText = "Логин";
+        string placeholderText1 = "Пароль";
+
+        private void FormAuthorization_Load(object sender, EventArgs e)
+        {
+            PasswordTextBox.UseSystemPasswordChar = true;
+            pictureBox3.Visible = false;
+
+            LoginTextBox.Text = placeholderText;
+            PasswordTextBox.Text = placeholderText1;
+
+            LoginTextBox.Text = placeholderText;
+            LoginTextBox.ForeColor = Color.Gray;  // Серый цвет для подсказки
+
+            PasswordTextBox.Text = placeholderText1;
+            PasswordTextBox.ForeColor = Color.Gray;  // Серый цвет для подсказки
+
+            // Подключаем события для LoginTextBox
+            LoginTextBox.Enter += LoginTextBox_Enter;
+            LoginTextBox.Leave += LoginTextBox_Leave;
+
+            // Подключаем события для PasswordTextBox
+            PasswordTextBox.Enter += PasswordTextBox_Enter;
+            PasswordTextBox.Leave += PasswordTextBox_Leave;
+
+        }
+
+        private void LoginTextBox_Enter(object sender, EventArgs e)
+        {
+            if (LoginTextBox.Text == placeholderText)
+            {
+                LoginTextBox.Text = "";
+                LoginTextBox.ForeColor = Color.Black; // Обычный цвет текста
+            }
+        }
+        private void LoginTextBox_Leave(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(LoginTextBox.Text))
+            {
+                LoginTextBox.Text = placeholderText;
+                LoginTextBox.ForeColor = Color.Gray; // Цвет для placeholder
+            }
+        }
+
+        private void PasswordTextBox_Enter(object sender, EventArgs e)
+        {
+            if (PasswordTextBox.Text == placeholderText1)
+            {
+                PasswordTextBox.Text = "";
+                PasswordTextBox.ForeColor = Color.Black; // Обычный цвет текста
+                PasswordTextBox.UseSystemPasswordChar = false; // Скрываем пароль при вводе
+            }
+        }
+
+        private void PasswordTextBox_Leave(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(PasswordTextBox.Text))
+            {
+                PasswordTextBox.UseSystemPasswordChar = false; // Отключаем символы пароля для placeholder
+                PasswordTextBox.Text = placeholderText1;
+                PasswordTextBox.ForeColor = Color.Gray; // Цвет для placeholder
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            LoginTextBox.Text = "";
+            PasswordTextBox.Text = "";
+
+            LoginTextBox.Text = placeholderText;
+            LoginTextBox.ForeColor = Color.Gray; // Цвет для placeholder
+
+            PasswordTextBox.Text = placeholderText1;
+            PasswordTextBox.ForeColor = Color.Gray; // Цвет для placeholder
+            PasswordTextBox.UseSystemPasswordChar = true; // Отключаем скрытие символов для placeholder
+            pictureBox4.Visible = true;
+
+        }
+
+        private void pictureBox4_Click(object sender, EventArgs e)
+        {
+            PasswordTextBox.UseSystemPasswordChar = true;
+            pictureBox3.Visible = true;
+            pictureBox4.Visible = false;
+        }
+
+        private void pictureBox3_Click(object sender, EventArgs e)
+        {
+            PasswordTextBox.UseSystemPasswordChar = false;
+            pictureBox3.Visible = false;
+            pictureBox4.Visible = true;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SqlConnect.Open();
+                string query = "select * from [User] where login = @login and password = @password";
+                using (SqlCommand command = new SqlCommand(query, SqlConnect))
+                {
+                    command.Parameters.AddWithValue("@login", LoginTextBox.Text);
+                    command.Parameters.AddWithValue("@password", md5.hashPassword(PasswordTextBox.Text));
+
+                    using (SqlDataReader sqlreader = command.ExecuteReader())
+                    {
+                        if (sqlreader.Read())
+                        {
+                            int numb = sqlreader.GetInt32(4);
+                            int user_id = sqlreader.GetInt32(0);
+                            this.Hide();
+
+                            switch (numb)
+                            {
+                                case 1:
+                                    sqlreader.Close();
+                                    MessageBox.Show("Вы успешно вошли.");
+                                    FormClient formClient = new FormClient(1, user_id);
+                                    formClient.Show();
+                                    break;
+
+                                case 2:
+                                    sqlreader.Close();
+                                    MessageBox.Show("Вы успешно вошли.");
+                                    Realtor formRealtor = new Realtor(2, user_id);
+                                    formRealtor.Show();
+                                    break;
+
+                                case 3:
+                                    sqlreader.Close();
+                                    MessageBox.Show("Вы успешно вошли.");
+                                    Admin formAdmin = new Admin(3);
+                                    formAdmin.Show();
+                                    break;
+
+                               default:
+                                   MessageBox.Show("Неизвестная роль пользователя!");
+                                   break;
+                            }
+                        }
+                        else
+                        {
+                            MessageBox.Show("Неверный логин или пароль!");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                if (SqlConnect.State == ConnectionState.Open)
+                    SqlConnect.Close();
+            }
+        }
+
+        private void linkLabel1_LinkClicked_1(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            this.Hide();
+            Registration registration = new Registration();
+            registration.ShowDialog();
+        }
+    }
+}
+
+
+//Форма Регистрации
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Data.SqlClient;
+
+namespace Realty
+{
+    public partial class Registration : Form
+    {
+        public Registration()
+        {
+            InitializeComponent();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(FirstNametextBox.Text) ||
+                string.IsNullOrWhiteSpace(NametextBox.Text) ||
+                string.IsNullOrWhiteSpace(PatronymictextBox.Text) ||
+                string.IsNullOrWhiteSpace(PhonetextBox.Text) ||
+                string.IsNullOrWhiteSpace(LogintextBox.Text) ||
+                string.IsNullOrWhiteSpace(PasswordtextBox.Text) ||
+                string.IsNullOrWhiteSpace(PasswordConfirmtextBox.Text)) 
+            {
+                MessageBox.Show("Все поля должны быть заполнены.");
+                return;
+            }
+
+            // Проверка совпадения паролей
+            if (PasswordtextBox.Text != PasswordConfirmtextBox.Text)
+            {
+                MessageBox.Show("Пароли не совпадают. Попробуйте снова.");
+                return;
+            }
+
+            SqlConnection conn = new SqlConnection(Properties.Settings.Default.connectionRealty);
+            SqlCommand cmd = new SqlCommand("add_user", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+            conn.Open();
+
+            cmd.Parameters.AddWithValue("@user_surname", FirstNametextBox.Text);
+            cmd.Parameters.AddWithValue("@user_name", NametextBox.Text);
+            cmd.Parameters.AddWithValue("@user_patronymic", PatronymictextBox.Text);
+            cmd.Parameters.AddWithValue("@user_phone", PhonetextBox.Text);
+            cmd.Parameters.AddWithValue("@login", LogintextBox.Text);
+            cmd.Parameters.AddWithValue("@password", md5.hashPassword(PasswordtextBox.Text));
+
+            try
+            {
+                cmd.ExecuteNonQuery();
+                MessageBox.Show("Вы успешно зарегистрировались!");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка! " + ex.Message);
+            }
+
+            FormAuthorization authorization = new FormAuthorization();
+            authorization.Show();
+            this.Close();
+            conn.Close();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            FirstNametextBox.Text = "";
+            FirstNametextBox.ForeColor = Color.Gray; 
+
+            NametextBox.Text = "";
+            NametextBox.ForeColor = Color.Gray; 
+
+            PatronymictextBox.Text = "";
+            PatronymictextBox.ForeColor = Color.Gray; 
+
+            PhonetextBox.Text = "";
+            PhonetextBox.ForeColor = Color.Gray; 
+
+            LogintextBox.Text = "";
+            LogintextBox.ForeColor = Color.Gray; 
+
+            PasswordtextBox.Text = "";
+            PasswordtextBox.ForeColor = Color.Gray;
+
+            PasswordConfirmtextBox.Text = "";
+            PasswordConfirmtextBox.ForeColor = Color.Gray;
+
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            this.Close();
+            FormAuthorization authorization = new FormAuthorization();
+            authorization.Show();
+        }
+    }
+}
+
+
+//Форма Форма Администратора
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Data.SqlClient;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Realty
+{
+    public partial class Admin : Form
+    {
+        int role;
+        public Admin(int numb)
+        {
+            InitializeComponent();
+            this.role = numb;
+
+            dataGridView1.ContextMenuStrip = contextMenuStrip1;
+            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dataGridView1.CellValueChanged += dataGridView1_CellValueChanged;
+        }
+
+        private void DeleteUser(int userId)
+        {
+            // Подключение к базе данных и выполнение команды удаления
+            using (SqlConnection connection = new SqlConnection(Properties.Settings.Default.connectionRealty))
+            {
+                connection.Open();
+                using (SqlCommand cmd = new SqlCommand("DELETE FROM [User] WHERE user_id = @UserId", connection))
+                {
+                    cmd.Parameters.AddWithValue("@UserId", userId);
+                    cmd.ExecuteNonQuery();
+                    MessageBox.Show("Пользователь удалён!");
+                }
+            }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            this.Close();
+            FormAuthorization authorization = new FormAuthorization();
+            authorization.Show();
+        }
+
+        private void FormAdmin_Load(object sender, EventArgs e)
+        {
+            // TODO: данная строка кода позволяет загрузить данные в таблицу "estateAgencyDataSet.User". При необходимости она может быть перемещена или удалена.
+            this.userTableAdapter.Fill(this.estateAgencyDataSet.User);
+            dataGridView1.ReadOnly = false;
+            dataGridView1.ReadOnly = false;
+            dataGridView1.EditMode = DataGridViewEditMode.EditOnKeystrokeOrF2;
+            dataGridView1.Enabled = true;
+
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            this.Close();
+            FormAuthorization formAuthorization = new FormAuthorization();
+            formAuthorization.ShowDialog();
+        }
+
+        private void удалитьToolStripMenuItem_Click_1(object sender, EventArgs e)
+        {
+            if (dataGridView1.SelectedRows.Count > 0)
+            {
+                int userId = Convert.ToInt32(dataGridView1.SelectedRows[0].Cells["user_id"].Value);
+
+                var result = MessageBox.Show("Вы уверены, что хотите удалить эту запись?", "Удаление", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                if (result == DialogResult.Yes)
+                {
+                    DeleteUser(userId);
+                    this.userTableAdapter.Fill(this.estateAgencyDataSet.User);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Выберите запись для удаления.");
+            }
+        }
+
+        private void dataGridView1_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0 && e.ColumnIndex >= 0)
+            {
+                DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
+                int userId = Convert.ToInt32(row.Cells["user_id"].Value);
+                string columnName = dataGridView1.Columns[e.ColumnIndex].DataPropertyName; // Используем DataPropertyName
+                object newValue = row.Cells[e.ColumnIndex].Value;
+
+                UpdateDatabase(userId, columnName, newValue);
+            }
+        }
+
+        private void UpdateDatabase(int userId, string columnName, object newValue)
+        {
+            using (SqlConnection connection = new SqlConnection(Properties.Settings.Default.connectionRealty))
+            {
+                connection.Open();
+                string query = $"UPDATE [User] SET {columnName} = @Value WHERE user_id = @UserId";
+
+                using (SqlCommand cmd = new SqlCommand(query, connection))
+                {
+                    cmd.Parameters.AddWithValue("@Value", newValue ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@UserId", userId);
+
+                    try
+                    {
+                        cmd.ExecuteNonQuery();
+                        MessageBox.Show("Данные успешно обновлены.");
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Ошибка обновления: {ex.Message}");
+                    }
+                }
+            }
+        }
+
+        private void textBoxSearch_TextChanged(object sender, EventArgs e)
+        {
+            string searchText = SearchTb.Text.ToLower();
+
+            BindingSource bindingSource = dataGridView1.DataSource as BindingSource;
+            if (bindingSource != null)
+            {
+                bindingSource.Filter = $"surname LIKE '%{searchText}%' OR " +
+                                       $"name LIKE '%{searchText}%' OR " +
+                                       $"patronymic LIKE '%{searchText}%' OR " +
+                                       $"phone LIKE '%{searchText}%' OR " +
+                                       $"login LIKE '%{searchText}%'";
+            }
+        }
+    }
+}
+
+
+//Форма Клиента
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Data.SqlClient;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+
+namespace Realty
+{
+    public partial class FormClient : Form
+    {
+        int role;
+        private int userId;
+        private int _userId;
+        SqlConnection connection = new SqlConnection(Properties.Settings.Default.connectionRealty);
+
+        public FormClient(int numb, int user_id)
+        {
+            InitializeComponent();
+            this.role = numb;
+            this.userId = user_id;
+            this.connection = connection;
+            LoadUserData(userId);
+            _userId = user_id;
+        }
+
+        private void test_Load(object sender, EventArgs e)
+        {
+            // TODO: данная строка кода позволяет загрузить данные в таблицу "estateAgencyDataSet13.RealtyView". При необходимости она может быть перемещена или удалена.
+            this.realtyViewTableAdapter5.Fill(this.estateAgencyDataSet13.RealtyView);
+            // TODO: данная строка кода позволяет загрузить данные в таблицу "estateAgencyDataSet10.RealtyView". При необходимости она может быть перемещена или удалена.
+            this.realtyViewTableAdapter4.Fill(this.estateAgencyDataSet10.RealtyView);
+            // TODO: данная строка кода позволяет загрузить данные в таблицу "estateAgencyDataSet6.RealtyView". При необходимости она может быть перемещена или удалена.
+            this.realtyViewTableAdapter3.Fill(this.estateAgencyDataSet6.RealtyView);
+            // TODO: данная строка кода позволяет загрузить данные в таблицу "estateAgencyDataSet3.RealtyView". При необходимости она может быть перемещена или удалена.
+            this.realtyViewTableAdapter2.Fill(this.estateAgencyDataSet3.RealtyView);
+            FillComboBoxes();
+            LoadUserData(_userId);
+            LoadFavorites();
+            ViewOrderHistory();
+            comboBoxPropertyType.SelectedIndexChanged += FilterData;
+            comboBoxPrice.SelectedIndexChanged += FilterData;
+            comboBoxRoomCount.SelectedIndexChanged += FilterData;
+            comboBoxCity.SelectedIndexChanged += FilterData;
+            SearchTb.TextChanged += FilterData;
+            // TODO: данная строка кода позволяет загрузить данные в таблицу "estateAgencyDataSet2.RealtyView". При необходимости она может быть перемещена или удалена.
+            this.realtyViewTableAdapter1.Fill(this.estateAgencyDataSet2.RealtyView);
+            // TODO: данная строка кода позволяет загрузить данные в таблицу "estateAgencyDataSet1.RealtyView". При необходимости она может быть перемещена или удалена.
+            //this.realtyViewTableAdapter.Fill(this.estateAgencyDataSet1.RealtyView);
+
+            dataGridViewRealty.ContextMenuStrip = contextMenuStrip1;
+        }
+
+        private void LoadUserData(int userId)
+        {
+            string query = "SELECT surname, name, patronymic, login, phone FROM [dbo].[User] WHERE user_id = @UserId";
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(Properties.Settings.Default.connectionRealty))
+                {
+                    SqlCommand command = new SqlCommand(query, connection);
+                    command.Parameters.AddWithValue("@UserId", userId);
+
+                    connection.Open();
+
+                    SqlDataReader reader = command.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+                        // Заполняем TextBox значениями из базы данных
+                        SurnameTb.Text = reader["surname"].ToString();
+                        NameTb.Text = reader["name"].ToString();
+                        PatronymicTb.Text = reader["patronymic"].ToString();
+                        EmailTb.Text = reader["login"].ToString();
+                        PhoneTb.Text = reader["phone"].ToString();
+                    }
+
+                    reader.Close();
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при загрузке данных: " + ex.Message);
+            }
+        }
+
+        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            richTextBox1.Text = dataGridViewRealty.CurrentRow.Cells[4].Value.ToString();
+            textBox1.Text = dataGridViewRealty.CurrentRow.Cells[0].Value.ToString();
+            textBox2.Text = dataGridViewRealty.CurrentRow.Cells[6].Value.ToString();
+            textBox3.Text = dataGridViewRealty.CurrentRow.Cells[5].Value.ToString();
+            textBox4.Text = dataGridViewRealty.CurrentRow.Cells[3].Value.ToString();
+        }
+
+        private void FillComboBoxes()
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(Properties.Settings.Default.connectionRealty))
+                {
+                    connection.Open();
+
+                    // Заполнение ComboBox для типа недвижимости
+                    comboBoxPropertyType.Items.Clear();
+                    comboBoxPropertyType.Items.Add("Все"); // Пустое значение
+                    SqlCommand cmdType = new SqlCommand("SELECT DISTINCT type_name FROM RealtyView", connection);
+                    SqlDataReader readerType = cmdType.ExecuteReader();
+                    while (readerType.Read())
+                    {
+                        comboBoxPropertyType.Items.Add(readerType["type_name"].ToString());
+                    }
+                    readerType.Close();
+
+                    // Заполнение ComboBox для диапазонов количества комнат
+                    comboBoxRoomCount.Items.Clear();
+                    comboBoxRoomCount.Items.Add("Все"); // Пустое значение
+                    comboBoxRoomCount.Items.Add("1 комната");
+                    comboBoxRoomCount.Items.Add("1-3 комнаты");
+                    comboBoxRoomCount.Items.Add("4-5 комнат");
+                    comboBoxRoomCount.Items.Add("Более 5 комнат");
+
+                    // Заполнение ComboBox для диапазонов цены
+                    comboBoxPrice.Items.Clear();
+                    comboBoxPrice.Items.Add("Все"); // Пустое значение
+                    comboBoxPrice.Items.Add("До 1 млн");
+                    comboBoxPrice.Items.Add("От 1 млн до 5 млн");
+                    comboBoxPrice.Items.Add("От 5 млн до 10 млн");
+                    comboBoxPrice.Items.Add("Более 10 млн");
+
+                    // Заполнение ComboBox для городов
+                    comboBoxCity.Items.Clear();
+                    comboBoxCity.Items.Add("Все"); // Пустое значение
+                    SqlCommand cmdCity = new SqlCommand("SELECT DISTINCT city_name FROM RealtyView", connection);
+                    SqlDataReader readerCity = cmdCity.ExecuteReader();
+                    while (readerCity.Read())
+                    {
+                        comboBoxCity.Items.Add(readerCity["city_name"].ToString());
+                    }
+                    readerCity.Close();
+
+                    // Устанавливаем начальный выбор на "Все" для сброса фильтра
+                    comboBoxPropertyType.SelectedIndex = 0;
+                    comboBoxRoomCount.SelectedIndex = 0;
+                    comboBoxPrice.SelectedIndex = 0;
+                    comboBoxCity.SelectedIndex = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при заполнении фильтров: " + ex.Message);
+            }
+        }
+        private void FilterData(object sender, EventArgs e)
+        {
+            try
+            {
+                // Начальный запрос, который выбирает все данные
+                string filterQuery = "SELECT * FROM RealtyView WHERE 1=1";
+
+                // Проверка, выбран ли хоть один фильтр
+                bool isFilterApplied = false;
+
+                // Фильтр по типу недвижимости
+                if (comboBoxPropertyType.SelectedIndex > 0) // Индекс > 0 означает, что выбрано значение, отличное от "Все"
+                {
+                    filterQuery += " AND type_name = @type";
+                    isFilterApplied = true;
+                }
+
+                // Фильтр по городу
+                if (comboBoxCity.SelectedIndex > 0) // Индекс > 0 означает, что выбрано значение, отличное от "Все"
+                {
+                    filterQuery += " AND city_name = @city";
+                    isFilterApplied = true;
+                }
+
+                // Фильтр по количеству комнат с использованием диапазона
+                if (comboBoxRoomCount.SelectedIndex > 0)
+                {
+                    switch (comboBoxRoomCount.SelectedIndex)
+                    {
+                        case 1:
+                            filterQuery += " AND quantity_rooms = 1";
+                            break;
+                        case 2:
+                            filterQuery += " AND quantity_rooms BETWEEN 1 AND 3";
+                            break;
+                        case 3:
+                            filterQuery += " AND quantity_rooms BETWEEN 4 AND 5";
+                            break;
+                        case 4:
+                            filterQuery += " AND quantity_rooms > 5";
+                            break;
+                    }
+                    isFilterApplied = true;
+                }
+
+                // Фильтр по цене с использованием диапазона
+                if (comboBoxPrice.SelectedIndex > 0)
+                {
+                    switch (comboBoxPrice.SelectedIndex)
+                    {
+                        case 1:
+                            filterQuery += " AND cost < 1000000";
+                            break;
+                        case 2:
+                            filterQuery += " AND cost BETWEEN 1000000 AND 5000000";
+                            break;
+                        case 3:
+                            filterQuery += " AND cost BETWEEN 5000000 AND 10000000";
+                            break;
+                        case 4:
+                            filterQuery += " AND cost > 10000000";
+                            break;
+                    }
+                    isFilterApplied = true;
+                }
+
+                // Фильтр по текстовому поиску
+                if (!string.IsNullOrEmpty(SearchTb.Text))
+                {
+                    filterQuery += " AND (type_name LIKE @SearchText OR Description LIKE @SearchText)";
+                    isFilterApplied = true;
+                }
+
+                // Если ни один фильтр не выбран, возвращаем исходное состояние, показывая все данные
+                if (!isFilterApplied)
+                {
+                    filterQuery = "SELECT * FROM RealtyView";
+                }
+
+                using (SqlConnection connection = new SqlConnection(Properties.Settings.Default.connectionRealty))
+                {
+                    SqlCommand command = new SqlCommand(filterQuery, connection);
+
+                    // Параметры для фильтров
+                    if (comboBoxPropertyType.SelectedIndex > 0)
+                    {
+                        command.Parameters.AddWithValue("@type", comboBoxPropertyType.SelectedItem.ToString());
+                    }
+                    if (comboBoxCity.SelectedIndex > 0)
+                    {
+                        command.Parameters.AddWithValue("@city", comboBoxCity.SelectedItem.ToString());
+                    }
+                    if (!string.IsNullOrEmpty(SearchTb.Text))
+                    {
+                        command.Parameters.AddWithValue("@SearchText", "%" + SearchTb.Text + "%");
+                    }
+                    
+
+                    SqlDataAdapter adapter = new SqlDataAdapter(command);
+                    DataTable table = new DataTable();
+                    adapter.Fill(table);
+
+                    dataGridViewRealty.DataSource = table;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при фильтрации данных: " + ex.Message);
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            this.Close();
+            FormAuthorization fa = new FormAuthorization();
+            fa.ShowDialog();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            AddRealtyForm addrealty = new AddRealtyForm(_userId);
+            addrealty.ShowDialog();
+        }
+
+        private void добавитьВИзбранноеToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (dataGridViewRealty.CurrentRow != null)
+            {
+                try
+                {
+                    // Получаем user_id и realty_id
+                    int userId = _userId;
+
+                    // Убедитесь, что имя столбца "realty_id" корректно!
+                    int realtyId = Convert.ToInt32(dataGridViewRealty.CurrentRow.Cells[9].Value);
+
+                    DateTime dateAdded = DateTime.Now;
+
+                    // SQL-запрос с проверкой на существование дубликатов
+                    string query = @"
+                IF NOT EXISTS (SELECT 1 FROM FavoriteRealty WHERE user_id = @UserId AND realty_id = @RealtyId)
+                BEGIN
+                    INSERT INTO FavoriteRealty (user_id, realty_id, date_added) 
+                    VALUES (@UserId, @RealtyId, @DateAdded)
+                END";
+
+                    // Локальное соединение
+                    using (SqlConnection connection = new SqlConnection(Properties.Settings.Default.connectionRealty))
+                    {
+                        using (SqlCommand command = new SqlCommand(query, connection))
+                        {
+                            command.Parameters.AddWithValue("@UserId", userId);
+                            command.Parameters.AddWithValue("@RealtyId", realtyId);
+                            command.Parameters.AddWithValue("@DateAdded", dateAdded);
+
+                            connection.Open();
+                            int rowsAffected = command.ExecuteNonQuery();
+                            connection.Close();
+
+                            if (rowsAffected > 0)
+                            {
+                                MessageBox.Show("Недвижимость добавлена в избранное!");
+                            }
+                            else
+                            {
+                                MessageBox.Show("Эта недвижимость уже добавлена в избранное.");
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка: {ex.Message}");
+                }
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите объект недвижимости для добавления в избранное.");
+            }
+        }
+
+
+        private void записатьсяНаПросмотрToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            int selectedRealtyId = 0;
+
+            // Проверяем, выбрана ли строка в DataGridView
+            if (dataGridViewRealty.CurrentRow == null)
+            {
+                MessageBox.Show("Пожалуйста, выберите объект недвижимости.");
+                return;
+            }
+
+            // Проверяем наличие столбца realty_id
+            if (!dataGridViewRealty.Columns.Contains("realtyidDataGridViewTextBoxColumn"))
+            {
+                MessageBox.Show("Столбец с идентификатором объекта недвижимости отсутствует.");
+                return;
+            }
+
+            // Получаем значение realty_id
+            var cellValue = dataGridViewRealty.CurrentRow.Cells["realtyidDataGridViewTextBoxColumn"].Value;
+
+            if (cellValue == null || cellValue == DBNull.Value)
+            {
+                MessageBox.Show("Не удалось получить идентификатор объекта недвижимости.");
+                return;
+            }
+
+            selectedRealtyId = Convert.ToInt32(cellValue);
+
+            int clientId = _userId; // ID клиента
+            decimal realtyCost = 0;
+            decimal transactionAmount = 0;
+            int realtorId = 0;
+
+            try
+            {
+                // Шаг 1: Получаем стоимость и ID риэлтора
+                string query = @"
+SELECT 
+    r.cost,
+    r.realtor_id
+FROM [dbo].[Realty] r
+WHERE r.realty_id = @realtyId";
+
+                using (SqlConnection connection = new SqlConnection(Properties.Settings.Default.connectionRealty))
+                {
+                    SqlCommand cmd = new SqlCommand(query, connection);
+                    cmd.Parameters.AddWithValue("@realtyId", selectedRealtyId);
+
+                    connection.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            realtyCost = reader["cost"] != DBNull.Value ? Convert.ToDecimal(reader["cost"]) : 0;
+                            realtorId = reader["realtor_id"] != DBNull.Value ? Convert.ToInt32(reader["realtor_id"]) : 0;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Не удалось найти информацию о выбранном объекте.");
+                            return;
+                        }
+                    }
+                }
+
+                if (realtorId == 0)
+                {
+                    MessageBox.Show("Не удалось определить риэлтора.");
+                    return;
+                }
+
+                // Шаг 2: Рассчитываем transactionAmount как стоимость недвижимости + 4% комиссии
+                transactionAmount = realtyCost + (realtyCost * 0.04m);
+
+                // Шаг 3: Добавляем запись в таблицу Order со статусом 4 (Записан на просмотр)
+                string insertOrderQuery = @"
+INSERT INTO [dbo].[Order] (client_id, realtor_id, realty_id, status_order, order_date, transaction_amount)
+VALUES (@clientId, @realtorId, @realtyId, @statusId, @orderDate, @transactionAmount)";
+
+                using (SqlConnection connection = new SqlConnection(Properties.Settings.Default.connectionRealty))
+                {
+                    SqlCommand orderCommand = new SqlCommand(insertOrderQuery, connection);
+                    orderCommand.Parameters.AddWithValue("@clientId", clientId);
+                    orderCommand.Parameters.AddWithValue("@realtorId", realtorId);
+                    orderCommand.Parameters.AddWithValue("@realtyId", selectedRealtyId);
+                    orderCommand.Parameters.AddWithValue("@statusId", 4); // Статус "Записан на просмотр"
+                    orderCommand.Parameters.AddWithValue("@orderDate", DateTime.Now);
+                    orderCommand.Parameters.AddWithValue("@transactionAmount", transactionAmount);
+
+                    connection.Open();
+                    orderCommand.ExecuteNonQuery();
+                    MessageBox.Show($"Вы успешно записались на просмотр.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка: {ex.Message}");
+            }
+        }
+
+        private void ViewOrderHistory()
+        {
+            int clientId = _userId;  // Получаем ID текущего клиента
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(Properties.Settings.Default.connectionRealty))
+                {
+                    string query = @"
+SELECT 
+    t.type_name AS [Тип недвижимости], 
+    c.city_name AS [Город],  
+    r.address AS [Улица],  
+    o.order_date AS [Дата изменения]
+FROM [dbo].[Order] o
+JOIN [dbo].[Realty] r ON o.realty_id = r.realty_id
+JOIN [dbo].[RealtyType] t ON r.type_id = t.type_id
+JOIN [dbo].[city] c ON r.city_id = c.city_id  
+WHERE o.client_id = @clientId AND o.status_order = 4";   // Статус "На просмотре"
+
+                    SqlCommand command = new SqlCommand(query, conn);
+                    command.Parameters.AddWithValue("@clientId", clientId);
+
+                    SqlDataAdapter adapter = new SqlDataAdapter(command);
+                    DataTable dataTable = new DataTable();
+                    adapter.Fill(dataTable);
+
+                    if (dataTable.Rows.Count == 0)
+                    {
+                        MessageBox.Show("История просмотров пуста.");
+                    }
+
+                    // Выводим историю в DataGridView
+                    dataGridViewHistory.DataSource = dataTable;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка: {ex.Message}");
+            }
+        }
+
+        private void LoadFavorites()
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(Properties.Settings.Default.connectionRealty))
+                {
+                    // Новый запрос для получения нужных данных
+                    string query = @"
+            SELECT 
+                f.favorite_id AS [Номер избранного],
+                r.description AS [Описание недвижимости],
+                f.date_added AS [Дата добавления]
+            FROM FavoriteRealty f
+            JOIN Realty r ON f.realty_id = r.realty_id
+            WHERE f.user_id = @UserId;";
+
+                    SqlCommand command = new SqlCommand(query, connection);
+                    command.Parameters.AddWithValue("@UserId", _userId);
+
+                    SqlDataAdapter adapter = new SqlDataAdapter(command);
+                    DataTable table = new DataTable();
+                    adapter.Fill(table);
+
+                    dataGridViewFavorites.DataSource = table;
+
+                    // Настройка авторазмера столбцов
+                    foreach (DataGridViewColumn column in dataGridViewFavorites.Columns)
+                    {
+                        column.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при загрузке избранного: " + ex.Message);
+            }
+        }
+
+        private void удалитьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (dataGridViewFavorites.CurrentRow != null)
+            {
+                try
+                {
+                    // Получаем номер избранного из текущей строки DataGridViewFavorites
+                    int favoriteId = Convert.ToInt32(dataGridViewFavorites.CurrentRow.Cells["Номер избранного"].Value);
+
+                    // SQL-запрос для удаления записи
+                    string deleteQuery = "DELETE FROM FavoriteRealty WHERE favorite_id = @FavoriteId";
+
+                    using (SqlConnection connection = new SqlConnection(Properties.Settings.Default.connectionRealty))
+                    {
+                        SqlCommand command = new SqlCommand(deleteQuery, connection);
+                        command.Parameters.AddWithValue("@FavoriteId", favoriteId);
+
+                        connection.Open();
+                        int rowsAffected = command.ExecuteNonQuery();
+                        connection.Close();
+
+                        if (rowsAffected > 0)
+                        {
+                            MessageBox.Show("Объект удален из избранного.");
+                        }
+                        else
+                        {
+                            MessageBox.Show("Ошибка: запись не найдена.");
+                        }
+
+                        // Обновляем DataGridViewFavorites
+                        LoadFavorites();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка удаления: {ex.Message}");
+                }
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите запись для удаления.");
+            }
+        }
+
+        private bool BuyRealty(int realtyId)
+        {
+            try
+            {
+                using (var connection = new SqlConnection(Properties.Settings.Default.connectionRealty))
+                {
+                    connection.Open();
+
+                    // Начало транзакции для обеспечения согласованности данных
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            // Шаг 1: Обновление статуса недвижимости
+                            string updateRealtyQuery = @"
+                        UPDATE [EstateAgency].[dbo].[Realty] 
+                        SET status_id = 2 -- 2 - статус 'Продано'
+                        WHERE realty_id = @realty_id AND status_id != 2";
+
+                            using (var updateCommand = new SqlCommand(updateRealtyQuery, connection, transaction))
+                            {
+                                updateCommand.Parameters.AddWithValue("@realty_id", realtyId);
+                                int rowsAffected = updateCommand.ExecuteNonQuery();
+
+                                if (rowsAffected == 0)
+                                {
+                                    // Если ни одна запись не обновлена, недвижимость уже продана
+                                    transaction.Rollback();
+                                    return false;
+                                }
+                            }
+
+                            // Шаг 2: Вставка данных о сделке в таблицу Order
+                            string insertOrderQuery = @"
+                        INSERT INTO [EstateAgency].[dbo].[Order] 
+                        (order_date, transaction_amount, status_order, client_id, realtor_id, realty_id) 
+                        VALUES 
+                        (@order_date, @transaction_amount, @status_order, @client_id, @realtor_id, @realty_id)";
+
+                            using (var insertCommand = new SqlCommand(insertOrderQuery, connection, transaction))
+                            {
+                                // Получение данных клиента и риелтора из других источников
+                                int clientId = _userId; // Метод получения ID текущего клиента
+                                int realtorId = GetRealtorIdByRealty(realtyId, connection, transaction); // Метод получения ID риелтора
+                                decimal transactionAmount = GetRealtyCost(realtyId, connection, transaction); // Метод получения стоимости недвижимости
+
+                                // Добавляем параметры
+                                insertCommand.Parameters.AddWithValue("@order_date", DateTime.Now);
+                                insertCommand.Parameters.AddWithValue("@transaction_amount", transactionAmount);
+                                insertCommand.Parameters.AddWithValue("@status_order", 2);
+                                insertCommand.Parameters.AddWithValue("@client_id", clientId);
+                                insertCommand.Parameters.AddWithValue("@realtor_id", realtorId);
+                                insertCommand.Parameters.AddWithValue("@realty_id", realtyId);
+
+                                insertCommand.ExecuteNonQuery();
+                            }
+
+                            // Подтверждение транзакции
+                            transaction.Commit();
+                            return true;
+                        }
+                        catch
+                        {
+                            // Откат транзакции при ошибке
+                            transaction.Rollback();
+                            throw;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при выполнении операции: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+        }
+
+        private int GetRealtorIdByRealty(int realtyId, SqlConnection connection, SqlTransaction transaction)
+        {
+            string query = "SELECT realtor_id FROM [EstateAgency].[dbo].[Realty] WHERE realty_id = @realty_id";
+            using (var command = new SqlCommand(query, connection, transaction))
+            {
+                command.Parameters.AddWithValue("@realty_id", realtyId);
+                return Convert.ToInt32(command.ExecuteScalar());
+            }
+        }
+
+        private decimal GetRealtyCost(int realtyId, SqlConnection connection, SqlTransaction transaction)
+        {
+            string query = "SELECT cost FROM [EstateAgency].[dbo].[Realty] WHERE realty_id = @realty_id";
+            using (var command = new SqlCommand(query, connection, transaction))
+            {
+                command.Parameters.AddWithValue("@realty_id", realtyId);
+                return Convert.ToDecimal(command.ExecuteScalar());
+            }
+        }
+
+        private void купитьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Проверяем, выделена ли строка
+            if (dataGridViewRealty.SelectedRows.Count > 0)
+            {
+                var selectedRow = dataGridViewRealty.SelectedRows[0];
+
+                // Получаем идентификатор недвижимости
+                int realtyId = Convert.ToInt32(selectedRow.Cells["realtyidDataGridViewTextBoxColumn"].Value);
+
+                // Проверяем текущий статус недвижимости
+                string status = selectedRow.Cells["statusnameDataGridViewTextBoxColumn"].Value.ToString();
+
+                if (status == "Продано")
+                {
+                    MessageBox.Show("Эта недвижимость уже продана.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Получаем сумму сделки
+                decimal transactionAmount = Convert.ToDecimal(selectedRow.Cells["costDataGridViewTextBoxColumn"].Value); // Предположим, колонка с ценой называется "costDataGridViewTextBoxColumn"
+
+                // Подтверждение покупки с выводом суммы
+                DialogResult result = MessageBox.Show(
+                    $"Вы уверены, что хотите купить эту недвижимость за {transactionAmount:C}?", // Форматируем как валюту
+                    "Подтверждение покупки",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (result == DialogResult.Yes)
+                {
+                    // Попытка купить недвижимость
+                    if (BuyRealty(realtyId))
+                    {
+                        // Если успешно, обновляем статус в DataGridView
+                        selectedRow.Cells["statusnameDataGridViewTextBoxColumn"].Value = "Продано";
+
+                        MessageBox.Show($"Поздравляем с покупкой недвижимости за {transactionAmount:C}!", "Успешно", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        // Сообщение в случае ошибки
+                        MessageBox.Show("Не удалось купить недвижимость. Повторите попытку позже.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+            else
+            {
+                // Сообщение, если ничего не выбрано
+                MessageBox.Show("Пожалуйста, выберите недвижимость для покупки.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void LoadRealtyData()
+        {
+            using (SqlConnection connection = new SqlConnection(Properties.Settings.Default.connectionRealty))
+            {
+                try
+                {
+                    connection.Open();
+
+                    // SQL-запрос для получения данных
+                    string query = @"SELECT r.address, r.cost, r.description, r.quantity_rooms, r.square, r.year_founded, 
+                            st.status_name, rt.type_name, c.city_name, r.realty_id, r.photo
+                            FROM dbo.Realty AS r
+                            INNER JOIN dbo.StatusType AS st ON r.status_id = st.status_id
+                            INNER JOIN dbo.RealtyType AS rt ON r.type_id = rt.type_id
+                            INNER JOIN dbo.City AS c ON r.city_id = c.city_id";
+
+                    SqlDataAdapter adapter = new SqlDataAdapter(query, connection);
+                    DataTable dataTable = new DataTable();
+                    adapter.Fill(dataTable);
+
+                    // Привязка данных к DataGridView
+                    dataGridViewRealty.DataSource = dataTable;
+
+                    // Добавляем колонку для фото, если ее еще нет
+                    if (!dataGridViewRealty.Columns.Contains("photo"))
+                    {
+                        DataGridViewImageColumn photoColumn = new DataGridViewImageColumn
+                        {
+                            Name = "photo",
+                            HeaderText = "Фото",
+                            ImageLayout = DataGridViewImageCellLayout.Zoom
+                        };
+                        dataGridViewRealty.Columns.Add(photoColumn);
+                    }
+
+                    // Устанавливаем изображения или заглушку
+                    foreach (DataGridViewRow row in dataGridViewRealty.Rows)
+                    {
+                        if (row.DataBoundItem is DataRowView dataRowView)
+                        {
+                            byte[] imageData = dataRowView["photo"] as byte[];
+
+                            if (imageData != null && imageData.Length > 0)
+                            {
+                                using (MemoryStream ms = new MemoryStream(imageData))
+                                {
+                                    row.Cells["photo"].Value = Image.FromStream(ms);
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка при загрузке данных: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void dataGridViewRealty_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                // Получение ID недвижимости из выбранной строки
+                DataGridViewRow row = dataGridViewRealty.Rows[e.RowIndex];
+                int realtyId = Convert.ToInt32(row.Cells["realty_id"].Value);
+
+                // Загрузка изображения для выбранной недвижимости
+                LoadRealtyData();
+            }
+        }
+    }
+}
+
+
+//Форма Риелтора
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Data.SqlClient;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Realty
+{
+    public partial class Realtor : Form
+    {
+        int role;
+        private int userId;
+        private int _userId;
+        public Realtor(int numb, int userId)
+        {
+            InitializeComponent();
+            this.role = numb;
+            this._userId = userId;
+        }
+
+        private void FormRealtor_Load(object sender, EventArgs e)
+        {
+            // TODO: данная строка кода позволяет загрузить данные в таблицу "agencyTestDataSet6.RealtyView". При необходимости она может быть перемещена или удалена.
+            this.realtyViewTableAdapter.Fill(this.estateAgencyDataSet4.RealtyView);
+
+            dataGridView1.ContextMenuStrip = contextMenuStrip1;
+            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            SearchTb.TextChanged += SearchTb_TextChanged;
+            textBox4.TextChanged += textBox4_TextChanged;
+            dataGridView2.DataSource = estateAgencyDataSet14.OrderView;
+            dataGridView2.AutoGenerateColumns = true;
+
+
+            foreach (DataGridViewColumn column in dataGridView2.Columns)
+            {
+                column.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            }
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            this.Close();
+            FormAuthorization fa = new FormAuthorization();
+            fa.ShowDialog();
+        }
+
+        private void удалитьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (dataGridView1.SelectedRows.Count > 0)
+            {
+                try
+                {
+                    // Получаем ID записи из выбранной строки
+                    int id = Convert.ToInt32(dataGridView1.SelectedRows[0].Cells["realty_id"].Value);
+
+                    // Подтверждение удаления
+                    var result = MessageBox.Show("Вы уверены, что хотите удалить запись?", "Подтверждение удаления", MessageBoxButtons.YesNo);
+                    if (result == DialogResult.Yes)
+                    {
+                        using (SqlConnection connection = new SqlConnection(Properties.Settings.Default.connectionRealty))
+                        {
+                            connection.Open();
+                            using (SqlCommand cmd = new SqlCommand("DELETE FROM Realty WHERE realty_id = @Id", connection))
+                            {
+                                cmd.Parameters.AddWithValue("@Id", id);
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+
+                        MessageBox.Show("Запись успешно удалена!");
+
+                        // Обновляем данные в таблице после удаления
+                        this.realtyViewTableAdapter.Fill(this.estateAgencyDataSet4.RealtyView);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка при удалении: " + ex.Message);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Выберите строку для удаления.");
+            }
+        }
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            richTextBox1.Text = dataGridView1.CurrentRow.Cells[3].Value.ToString();
+            textBox1.Text = dataGridView1.CurrentRow.Cells[6].Value.ToString();
+            textBox2.Text = dataGridView1.CurrentRow.Cells[2].Value.ToString();
+            textBox3.Text = dataGridView1.CurrentRow.Cells[1].Value.ToString();
+        }
+
+        private void Realtor_Load(object sender, EventArgs e)
+        {
+            // TODO: данная строка кода позволяет загрузить данные в таблицу "estateAgencyDataSet17.OrderView". При необходимости она может быть перемещена или удалена.
+            this.orderViewTableAdapter2.Fill(this.estateAgencyDataSet17.OrderView);
+            // TODO: данная строка кода позволяет загрузить данные в таблицу "estateAgencyDataSet16.OrderView". При необходимости она может быть перемещена или удалена.
+            //this.orderViewTableAdapter2.Fill(this.estateAgencyDataSet16.OrderView);
+            // TODO: данная строка кода позволяет загрузить данные в таблицу "estateAgencyDataSet15.OrderView". При необходимости она может быть перемещена или удалена.
+            this.orderViewTableAdapter1.Fill(this.estateAgencyDataSet15.OrderView);
+            // TODO: данная строка кода позволяет загрузить данные в таблицу "estateAgencyDataSet14.OrderView". При необходимости она может быть перемещена или удалена.
+            this.orderViewTableAdapter.Fill(this.estateAgencyDataSet14.OrderView);
+            // TODO: данная строка кода позволяет загрузить данные в таблицу "estateAgencyDataSet4.RealtyView". При необходимости она может быть перемещена или удалена.
+            this.realtyViewTableAdapter.Fill(this.estateAgencyDataSet4.RealtyView);
+            // Загрузка данных в DataGridView
+            this.realtyViewTableAdapter.Fill(this.estateAgencyDataSet4.RealtyView);
+            LoadStatuses();
+        }
+
+        private void LoadStatuses()
+        {
+            string query = "SELECT status_id, status_name FROM dbo.StatusType"; // Запрос на выборку всех статусов
+
+            using (SqlConnection connection = new SqlConnection(Properties.Settings.Default.connectionRealty))
+            {
+                SqlDataAdapter adapter = new SqlDataAdapter(query, connection);
+                DataTable dataTable = new DataTable();
+                adapter.Fill(dataTable);
+
+                comboBox1.DisplayMember = "status_name"; // Отображаемое значение
+                comboBox1.ValueMember = "status_id"; // Значение, которое отправляется при выборе
+                comboBox1.DataSource = dataTable;
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            AddRealtyForm addRealtyForm = new AddRealtyForm(_userId);
+            addRealtyForm.ShowDialog();
+            this.realtyViewTableAdapter.Fill(this.estateAgencyDataSet4.RealtyView);
+        }
+
+        private void SearchTb_TextChanged(object sender, EventArgs e)
+        {
+            FilterDataGridView1();
+        }
+
+        private void textBox4_TextChanged(object sender, EventArgs e)
+        {
+            FilterDataGridView2();
+        }
+
+        private void FilterDataGridView1()
+        {
+            string searchText = SearchTb.Text.Trim();
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(Properties.Settings.Default.connectionRealty))
+                {
+                    // SQL-запрос для поиска по городу, адресу, типу недвижимости, цене и площади
+                    string query = @"SELECT * FROM RealtyView 
+                             WHERE city_name LIKE @SearchText
+                                OR address LIKE @SearchText
+                                OR type_name LIKE @SearchText
+                                OR cost LIKE @SearchText
+                                OR square LIKE @SearchText";
+
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@SearchText", "%" + searchText + "%");
+
+                        SqlDataAdapter adapter = new SqlDataAdapter(command);
+                        DataTable table = new DataTable();
+                        adapter.Fill(table);
+
+                        dataGridView1.DataSource = table;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при фильтрации первой таблицы: " + ex.Message);
+            }
+        }
+
+        private void FilterDataGridView2()
+        {
+            string searchText = textBox4.Text.Trim();
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(Properties.Settings.Default.connectionRealty))
+                {
+                    // SQL-запрос для поиска по номеру заказа
+                    string query = @"SELECT * FROM OrderView
+                             WHERE order_id LIKE @SearchText";
+
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@SearchText", "%" + searchText + "%");
+
+                        SqlDataAdapter adapter = new SqlDataAdapter(command);
+                        DataTable table = new DataTable();
+                        adapter.Fill(table);
+
+                        dataGridView2.DataSource = table;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при фильтрации второй таблицы: " + ex.Message);
+            }
+        }
+
+        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            richTextBox1.Text = dataGridView1.CurrentRow.Cells[4].Value.ToString();
+            textBox1.Text = dataGridView1.CurrentRow.Cells[7].Value.ToString();
+            textBox2.Text = dataGridView1.CurrentRow.Cells[3].Value.ToString();
+            textBox3.Text = dataGridView1.CurrentRow.Cells[2].Value.ToString();
+
+            string status = dataGridView1.CurrentRow.Cells["statusnameDataGridViewTextBoxColumn"].Value.ToString();
+            comboBox1.SelectedItem = status; // Обновляем комбобокс
+
+            object cellValue = dataGridView1.CurrentRow.Cells[8].Value;
+            if (cellValue != null && !string.IsNullOrWhiteSpace(cellValue.ToString()))
+            {
+                string imagePath = Path.Combine(Application.StartupPath, "photos", cellValue.ToString());
+                if (File.Exists(imagePath))
+                {
+                    pictureBox2.Image = Image.FromFile(imagePath);
+                }
+                else
+                {
+                    pictureBox2.Image = Image.FromFile(Path.Combine(Application.StartupPath, "photo", "house.png"));
+                }
+            }
+        }
+
+        private void UpdateOrderStatus(int realtyId, int newStatus)
+        {
+            string query = "UPDATE [dbo].[Realty] SET [status_id] = @status_id WHERE [realty_id] = @realty_id";
+
+            using (SqlConnection connection = new SqlConnection(Properties.Settings.Default.connectionRealty))
+            {
+                SqlCommand command = new SqlCommand(query, connection);
+                command.Parameters.AddWithValue("@status_id", newStatus); // Обновляем статус
+                command.Parameters.AddWithValue("@realty_id", realtyId); // ID недвижимости
+
+                try
+                {
+                    connection.Open();
+                    int rowsAffected = command.ExecuteNonQuery();
+
+                    if (rowsAffected > 0)
+                    {
+                        //MessageBox.Show("Статус недвижимости успешно обновлен.");
+                    }
+                    else
+                    {
+                        MessageBox.Show("Недвижимость с указанным ID не найдена.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка при обновлении статуса: " + ex.Message);
+                }
+            }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            // Проверяем, введен ли ID заказа
+            if (string.IsNullOrWhiteSpace(textBox4.Text))
+            {
+                MessageBox.Show("Введите ID заказа.");
+                return;
+            }
+
+            // Проверяем, выбран ли статус
+            if (comboBox1.SelectedItem == null)
+            {
+                MessageBox.Show("Выберите статус.");
+                return;
+            }
+
+            try
+            {
+                // Получаем ID заказа
+                int orderId = int.Parse(textBox4.Text); // Преобразование из строки в число
+
+                // Получаем выбранный статус
+                int newStatus = (int)comboBox1.SelectedValue;
+
+                // Вызываем метод обновления статуса
+                UpdateOrderStatus(orderId, newStatus);
+
+                this.realtyViewTableAdapter.Fill(this.estateAgencyDataSet4.RealtyView);
+
+                MessageBox.Show("Статус успешно обновлен!");
+            }
+            catch (FormatException)
+            {
+                MessageBox.Show("ID заказа должен быть числом.");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка: " + ex.Message);
+            }
+        }
+
+        private void dataGridView2_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            textBox5.Text = dataGridView2.CurrentRow.Cells["realtorfullnameDataGridViewTextBoxColumn"].Value.ToString();
+            textBox6.Text = dataGridView2.CurrentRow.Cells["realtorphoneDataGridViewTextBoxColumn"].Value.ToString();
+            textBox7.Text = dataGridView2.CurrentRow.Cells["clientfullnameDataGridViewTextBoxColumn"].Value.ToString();
+            textBox8.Text = dataGridView2.CurrentRow.Cells["clientphoneDataGridViewTextBoxColumn"].Value.ToString();
+            textBox9.Text = dataGridView2.CurrentRow.Cells["transactionamountDataGridViewTextBoxColumn"].Value.ToString();
+        }
+    }
+}
+
+
+//Форма Добавления новой недвижимости
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Data.SqlClient;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Realty
+{
+    public partial class AddRealtyForm : Form
+    {
+        private int userId;
+        private SqlConnection SqlConnect = new SqlConnection(Properties.Settings.Default.connectionRealty);
+        public AddRealtyForm(int userId)
+        {
+            InitializeComponent();
+            this.userId = userId;
+        }
+
+        private void AddRealtyForm_Load(object sender, EventArgs e)
+        {
+            using (SqlConnection connection = new SqlConnection(Properties.Settings.Default.connectionRealty))
+            {
+                try
+                {
+                    connection.Open();
+
+                    // Загрузка типов недвижимости
+                    LoadComboBoxData(connection, comboBox1, "SELECT type_id, type_name FROM RealtyType", "type_name", "type_id");
+
+                    // Загрузка городов
+                    LoadComboBoxData(connection, comboBox2, "SELECT city_id, city_name FROM city", "city_name", "city_id");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка при загрузке данных: " + ex.Message);
+                }
+            }
+        }
+        // Универсальный метод загрузки данных для ComboBox
+        private void LoadComboBoxData(SqlConnection connection, ComboBox comboBox, string query, string displayMember, string valueMember)
+        {
+            using (SqlCommand cmd = new SqlCommand(query, connection))
+            using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
+            {
+                DataTable dataTable = new DataTable();
+                adapter.Fill(dataTable);
+
+                comboBox.DataSource = dataTable;
+                comboBox.DisplayMember = displayMember;
+                comboBox.ValueMember = valueMember;
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            // Проверка на заполненность всех обязательных полей
+            if (string.IsNullOrWhiteSpace(comboBox1.Text) || // Тип недвижимости
+                string.IsNullOrWhiteSpace(comboBox2.Text) || // Город
+                string.IsNullOrWhiteSpace(textBox7.Text) || // Улица
+                string.IsNullOrWhiteSpace(textBox1.Text) || // Цена
+                string.IsNullOrWhiteSpace(textBox2.Text) || // Площадь
+                string.IsNullOrWhiteSpace(textBox3.Text)) // Кол-во комнат
+            {
+                MessageBox.Show("Пожалуйста, заполните все обязательные поля.");
+                return;
+            }
+
+            // Подключение к базе данных
+            using (SqlConnection conn = new SqlConnection(Properties.Settings.Default.connectionRealty))
+            {
+                try
+                {
+                    conn.Open();
+
+                    // SQL-запрос для вставки данных в таблицу Realty
+                    string query = @"
+INSERT INTO Realty (type_id, city_id, address, cost, square, quantity_rooms, description, year_founded, realtor_id)
+VALUES (@type_id, @city_id, @address, @cost, @square, @quantity_rooms, @description, @year_founded, @realtor_id);
+SELECT CAST(scope_identity() AS int);";  // Получаем ID только что добавленной записи
+
+                    using (SqlCommand command = new SqlCommand(query, conn))
+                    {
+                        // Добавление параметров из формы
+                        command.Parameters.AddWithValue("@type_id", comboBox1.SelectedValue); // Тип недвижимости
+                        command.Parameters.AddWithValue("@city_id", comboBox2.SelectedValue); // Город
+                        command.Parameters.AddWithValue("@address", textBox7.Text); // Улица
+                        command.Parameters.AddWithValue("@cost", textBox1.Text); // Цена
+                        command.Parameters.AddWithValue("@square", textBox2.Text); // Площадь
+                        command.Parameters.AddWithValue("@quantity_rooms", textBox3.Text); // Кол-во комнат
+                        command.Parameters.AddWithValue("@description", string.IsNullOrWhiteSpace(textBox4.Text) ? (object)DBNull.Value : textBox4.Text); // Описание
+                        command.Parameters.AddWithValue("@year_founded", string.IsNullOrWhiteSpace(textBox6.Text) ? (object)DBNull.Value : textBox6.Text); // Год постройки
+                        command.Parameters.AddWithValue("@realtor_id", userId); // ID риелтора (человек, который выставляет недвижимость)
+
+                        // Выполнение запроса и получение ID нового объекта
+                        int newRealtyId = (int)command.ExecuteScalar();
+
+                        // Если есть изображение, загружаем его в базу
+                        if (pictureBox1.Image != null)
+                        {
+                            var uploader = new ImageUploader(Properties.Settings.Default.connectionRealty);
+                            uploader.Upload(pictureBox1, newRealtyId);
+                        }
+                        MessageBox.Show("Данные успешно добавлены!");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Ошибка при добавлении данных: " + ex.Message);
+                }
+            }
+            this.Close();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            using (var openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "Image files(*.jpg, *.jpeg, *.png) | *.jpg; *.jpeg; *.png";
+                openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    pictureBox1.Image = Image.FromFile(openFileDialog.FileName);
+                }
+            }
+        }
+
+        class ImageUploader
+        {
+            private readonly string _connectionString;
+            public ImageUploader(string connectionString)
+            {
+                _connectionString = connectionString;
+            }
+
+            public void Upload(PictureBox pictureBox, int realtyId)
+            {
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+
+                    // Конвертация изображения в байты
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        // Сохраняем изображение в память в формате JPEG
+                        pictureBox.Image.Save(memoryStream, ImageFormat.Jpeg);
+                        byte[] imageBytes = memoryStream.ToArray();
+
+                        // SQL-запрос для вставки изображения в таблицу
+                        using (var command = new SqlCommand("UPDATE Realty SET photo = @photo WHERE realty_id = @realty_id", connection))
+                        {
+                            command.Parameters.AddWithValue("@photo", imageBytes);
+                            command.Parameters.AddWithValue("@realty_id", realtyId);  // Здесь realty_id — это ID объекта недвижимости
+
+                            // Выполнение запроса
+                            command.ExecuteNonQuery();
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
