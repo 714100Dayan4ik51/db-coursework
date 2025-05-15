@@ -10,3 +10,6 @@
 - **СУБД**: Microsoft SQL Server.
 - **Язык программирования**: C# (.NET Framework).
 - **Интерфейс**: Windows Forms.
+
+## СДиаграмма базы данных
+![Рисунок 1](https://github.com/714100Dayan4ik51/db-coursework/blob/main/%D0%A0%D0%B8%D1%81%D1%83%D0%BD%D0%BE%D0%BA1.png?raw=true)
