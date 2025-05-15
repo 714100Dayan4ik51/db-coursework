@@ -1,0 +1,644 @@
+USE [master]
+GO
+/****** Object:  Database [EstateAgency]    Script Date: 18.12.2024 18:34:09 ******/
+CREATE DATABASE [EstateAgency]
+ CONTAINMENT = NONE
+ ON  PRIMARY 
+( NAME = N'EstateAgency', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\DATA\EstateAgency.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
+ LOG ON 
+( NAME = N'EstateAgency_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\DATA\EstateAgency_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+ WITH CATALOG_COLLATION = DATABASE_DEFAULT, LEDGER = OFF
+GO
+ALTER DATABASE [EstateAgency] SET COMPATIBILITY_LEVEL = 160
+GO
+IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+begin
+EXEC [EstateAgency].[dbo].[sp_fulltext_database] @action = 'enable'
+end
+GO
+ALTER DATABASE [EstateAgency] SET ANSI_NULL_DEFAULT OFF 
+GO
+ALTER DATABASE [EstateAgency] SET ANSI_NULLS OFF 
+GO
+ALTER DATABASE [EstateAgency] SET ANSI_PADDING OFF 
+GO
+ALTER DATABASE [EstateAgency] SET ANSI_WARNINGS OFF 
+GO
+ALTER DATABASE [EstateAgency] SET ARITHABORT OFF 
+GO
+ALTER DATABASE [EstateAgency] SET AUTO_CLOSE OFF 
+GO
+ALTER DATABASE [EstateAgency] SET AUTO_SHRINK OFF 
+GO
+ALTER DATABASE [EstateAgency] SET AUTO_UPDATE_STATISTICS ON 
+GO
+ALTER DATABASE [EstateAgency] SET CURSOR_CLOSE_ON_COMMIT OFF 
+GO
+ALTER DATABASE [EstateAgency] SET CURSOR_DEFAULT  GLOBAL 
+GO
+ALTER DATABASE [EstateAgency] SET CONCAT_NULL_YIELDS_NULL OFF 
+GO
+ALTER DATABASE [EstateAgency] SET NUMERIC_ROUNDABORT OFF 
+GO
+ALTER DATABASE [EstateAgency] SET QUOTED_IDENTIFIER OFF 
+GO
+ALTER DATABASE [EstateAgency] SET RECURSIVE_TRIGGERS OFF 
+GO
+ALTER DATABASE [EstateAgency] SET  DISABLE_BROKER 
+GO
+ALTER DATABASE [EstateAgency] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
+GO
+ALTER DATABASE [EstateAgency] SET DATE_CORRELATION_OPTIMIZATION OFF 
+GO
+ALTER DATABASE [EstateAgency] SET TRUSTWORTHY OFF 
+GO
+ALTER DATABASE [EstateAgency] SET ALLOW_SNAPSHOT_ISOLATION OFF 
+GO
+ALTER DATABASE [EstateAgency] SET PARAMETERIZATION SIMPLE 
+GO
+ALTER DATABASE [EstateAgency] SET READ_COMMITTED_SNAPSHOT OFF 
+GO
+ALTER DATABASE [EstateAgency] SET HONOR_BROKER_PRIORITY OFF 
+GO
+ALTER DATABASE [EstateAgency] SET RECOVERY FULL 
+GO
+ALTER DATABASE [EstateAgency] SET  MULTI_USER 
+GO
+ALTER DATABASE [EstateAgency] SET PAGE_VERIFY CHECKSUM  
+GO
+ALTER DATABASE [EstateAgency] SET DB_CHAINING OFF 
+GO
+ALTER DATABASE [EstateAgency] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
+GO
+ALTER DATABASE [EstateAgency] SET TARGET_RECOVERY_TIME = 60 SECONDS 
+GO
+ALTER DATABASE [EstateAgency] SET DELAYED_DURABILITY = DISABLED 
+GO
+ALTER DATABASE [EstateAgency] SET ACCELERATED_DATABASE_RECOVERY = OFF  
+GO
+EXEC sys.sp_db_vardecimal_storage_format N'EstateAgency', N'ON'
+GO
+ALTER DATABASE [EstateAgency] SET QUERY_STORE = ON
+GO
+ALTER DATABASE [EstateAgency] SET QUERY_STORE (OPERATION_MODE = READ_WRITE, CLEANUP_POLICY = (STALE_QUERY_THRESHOLD_DAYS = 30), DATA_FLUSH_INTERVAL_SECONDS = 900, INTERVAL_LENGTH_MINUTES = 60, MAX_STORAGE_SIZE_MB = 1000, QUERY_CAPTURE_MODE = AUTO, SIZE_BASED_CLEANUP_MODE = AUTO, MAX_PLANS_PER_QUERY = 200, WAIT_STATS_CAPTURE_MODE = ON)
+GO
+USE [EstateAgency]
+GO
+/****** Object:  ColumnMasterKey [CMK_Auto1]    Script Date: 18.12.2024 18:34:10 ******/
+CREATE COLUMN MASTER KEY [CMK_Auto1]
+WITH
+(
+	KEY_STORE_PROVIDER_NAME = N'MSSQL_CERTIFICATE_STORE',
+	KEY_PATH = N'CurrentUser/my/DFD0804888A5E40446DBFFA4713A4BB93BA73CA9'
+)
+GO
+/****** Object:  ColumnMasterKey [CMK_Auto2]    Script Date: 18.12.2024 18:34:10 ******/
+CREATE COLUMN MASTER KEY [CMK_Auto2]
+WITH
+(
+	KEY_STORE_PROVIDER_NAME = N'MSSQL_CERTIFICATE_STORE',
+	KEY_PATH = N'CurrentUser/my/173423970A441094ED9344FAAD4F1A1E7A6894A7'
+)
+GO
+/****** Object:  ColumnEncryptionKey [CEK_Auto1]    Script Date: 18.12.2024 18:34:10 ******/
+CREATE COLUMN ENCRYPTION KEY [CEK_Auto1]
+WITH VALUES
+(
+	COLUMN_MASTER_KEY = [CMK_Auto1],
+	ALGORITHM = 'RSA_OAEP',
+	ENCRYPTED_VALUE = 0x016E000001630075007200720065006E00740075007300650072002F006D0079002F006400660064003000380030003400380038003800610035006500340030003400340036006400620066006600610034003700310033006100340062006200390033006200610037003300630061003900827DBB49EBAA1B3D2D62BFBEE963749433FE9BE3815884C2E46C0F8D2075483F59FCF9FB0A73B9DA90AF1032DAAF0A6849F889A6606DDAB10685591CBF67628151D5C99070DD134A3776314A945BB5143744067E72B490D239C8E943E0DA0B21026AF321D38381CA49CAC7F7A07F9A590767EB06E4065B520ADB8BC5A46B561EBCD6FBF9B47B05196D2D7CC346F1679926EB8E993C615E8ED6A7BBE3D54A7EB1E620A3CEFCC6E468CCF28A4F437C8F2EFB6FEB199478F5606F412B7E46A9E983E3D5BEE8A5F13A46D5AF35BC989D8A53FA5ED3463A204144667CB2266F143DDB8B2AD4FAF7307C99B8CC529BCB2DDF3B4633893A24EF608AE34ADB055A70984061BDDA3708E7576E8558B79A086CF183BC78CD4C50952A41E410A1ED1818B62C519846B1C3C5C2110CE166BD56A92576044B40ACC8ACB38F366049A5D91D16854371BA8A035498CC08BA25160B692B8BAA7F5A596856B60D2911868E087FC7EBE5C6E0BCB2B656CAA1921AE50B4B7DE3358F218666021C870F318FB4B9555397C054ADD51EC6BF5290BB5B9007EF341E5DDE3B527AAE804E1B120E80329F57F49DC36368D0CA83001666D352716014B755E6D0C0F2E225A20381A2B864465C42B50AE306FC0F3F8E6DB1893772011AFFB43815C9A772D0CA3CA2AC7E73731462286D0541932CF79304B8BD5913E529CE4312ACEE542FCC265BC54BB825C41875
+)
+GO
+/****** Object:  ColumnEncryptionKey [CEK_Auto2]    Script Date: 18.12.2024 18:34:10 ******/
+CREATE COLUMN ENCRYPTION KEY [CEK_Auto2]
+WITH VALUES
+(
+	COLUMN_MASTER_KEY = [CMK_Auto2],
+	ALGORITHM = 'RSA_OAEP',
+	ENCRYPTED_VALUE = 0x016E000001630075007200720065006E00740075007300650072002F006D0079002F003100370033003400320033003900370030006100340034003100300039003400650064003900330034003400660061006100640034006600310061003100650037006100360038003900340061003700AA075AF1325EE4FD25346A043731D3D42BED9BAF8CF034D3DB713F397D63EA1957321C4B0970ACB2F55A7E0D3C77EFDF6972ADB0B536809E42695C902DDC303CB9DA0B8DEC80B53848624096663E5F8218517053A27500ADD523FAEEB9F792F62919EA8A6B687B3A3A0B0BB18B9F0BC6E2CE2204DF393B0A034B2E00B29AD9FCDC85BD37828F1569D28594B66425427A027C68ADD3B1EBA6E5A830802B20AB8CABA6AEFF3EE2174F87471D26AC9D56561242B877B0B4F8BBE05AE96F1697779A8A5D901302145026CC52FB0F116B84BDB9775FBB7CC90CE6E9C3D8AD1FB5D277F48EC8D2F710E0BE88ECA80E524BAD4F620EE78D8F4B0463F7A72C3AA4DDC78877450B0AE12133A4815AFC514AEF8C5D65D72831E32CB28E1105555A83093248EA4AA7114F793175CF0399ECA5012C8186D9737E4FA4DD396DC8BE921DF211EF3E38857AD419B96830F89D521D3892544A5428B670F3711638259FA7B807092F0FC075289561284920359AC543D67F38537C756BE8DA97B598F049C8C19885532DFC89DAE643D25B5ACAC0A0C49D3DE5B05B9FBA67092CBC770AE894A942EF08E46F65F59007143093F90F99760D7EC922A9567F462661D453C822A57FC7A414B5ABCFFD204BBF39E779C8564618666A3546D60B6B8BF5F6F16F763C92CED319753CC6E9BC75A30E9F814E2FA66ABCB7B48FFBEB644A6D861FE7DD4CF7A2DB92
+)
+GO
+/****** Object:  Table [dbo].[City]    Script Date: 18.12.2024 18:34:10 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[City](
+	[city_id] [int] IDENTITY(1,1) NOT NULL,
+	[city_name] [varchar](50) NOT NULL,
+ CONSTRAINT [PK_City] PRIMARY KEY CLUSTERED 
+(
+	[city_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Realty]    Script Date: 18.12.2024 18:34:10 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Realty](
+	[realty_id] [int] IDENTITY(1,1) NOT NULL,
+	[address] [varchar](50) NOT NULL,
+	[cost] [money] NOT NULL,
+	[description] [varchar](50) NULL,
+	[quantity_rooms] [varchar](50) NOT NULL,
+	[square] [float] NOT NULL,
+	[year_founded] [int] NULL,
+	[status_id] [int] NOT NULL,
+	[type_id] [int] NOT NULL,
+	[city_id] [int] NOT NULL,
+	[realtor_id] [int] NOT NULL,
+ CONSTRAINT [PK_Realty] PRIMARY KEY CLUSTERED 
+(
+	[realty_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[RealtyType]    Script Date: 18.12.2024 18:34:10 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[RealtyType](
+	[type_id] [int] IDENTITY(1,1) NOT NULL,
+	[type_name] [varchar](35) NOT NULL,
+ CONSTRAINT [PK_RealtyType] PRIMARY KEY CLUSTERED 
+(
+	[type_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[StatusType]    Script Date: 18.12.2024 18:34:10 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[StatusType](
+	[status_id] [int] IDENTITY(1,1) NOT NULL,
+	[status_name] [varchar](35) NOT NULL,
+ CONSTRAINT [PK_StatusType] PRIMARY KEY CLUSTERED 
+(
+	[status_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  View [dbo].[View_Realty]    Script Date: 18.12.2024 18:34:10 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE VIEW [dbo].[View_Realty]
+AS
+SELECT 
+    r.realty_id AS [Realty ID],               -- ID недвижимости
+    r.address AS [Address],                  -- Адрес недвижимости
+    r.cost AS [Cost],                        -- Стоимость
+    r.description AS [Description],          -- Описание
+    r.quantity_rooms AS [Rooms],             -- Количество комнат
+    r.square AS [Square],                    -- Площадь
+    r.year_founded AS [Year Built],          -- Год постройки
+    r.realtor_id AS [Realtor ID],            -- ID риелтора
+    r.status_id AS [Status ID],              -- ID статуса
+    st.status_name AS [Status Name],         -- Название статуса
+    r.type_id AS [Type ID],                  -- ID типа недвижимости
+    rt.type_name AS [Type Name],             -- Название типа недвижимости
+    r.city_id AS [City ID],                  -- ID города
+    c.city_name AS [City Name]               -- Название города
+FROM 
+    Realty r
+LEFT JOIN 
+    StatusType st ON r.status_id = st.status_id -- Присоединение к таблице статусов
+LEFT JOIN 
+    RealtyType rt ON r.type_id = rt.type_id     -- Присоединение к таблице типов недвижимости
+LEFT JOIN 
+    City c ON r.city_id = c.city_id             -- Присоединение к таблице городов;
+GO
+/****** Object:  Table [dbo].[User]    Script Date: 18.12.2024 18:34:10 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[User](
+	[user_id] [int] IDENTITY(1,1) NOT NULL,
+	[surname] [varchar](50) NOT NULL,
+	[name] [varchar](50) NOT NULL,
+	[patronymic] [varchar](50) NOT NULL,
+	[role_id] [int] NOT NULL,
+	[phone] [varchar](20) NOT NULL,
+	[login] [varchar](50) NOT NULL,
+	[password] [varchar](max) NULL,
+ CONSTRAINT [PK_User] PRIMARY KEY CLUSTERED 
+(
+	[user_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  View [dbo].[v_RealtyDetails]    Script Date: 18.12.2024 18:34:10 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE VIEW [dbo].[v_RealtyDetails] AS
+SELECT 
+    r.realty_id,
+    r.address,
+    r.cost,
+    r.description,
+    r.quantity_rooms,
+    r.square,
+    r.year_founded,
+    r.status_id,
+    r.type_id,
+    r.city_id,
+    r.realtor_id,
+    c.city_name,
+    rt.type_name AS realty_type,
+    st.status_name AS status_name,
+    u.surname AS realtor_surname,
+    u.name AS realtor_name,
+    u.patronymic AS realtor_patronymic
+FROM 
+    dbo.Realty r
+JOIN 
+    dbo.City c ON r.city_id = c.city_id
+JOIN 
+    dbo.RealtyType rt ON r.type_id = rt.type_id
+JOIN 
+    dbo.StatusType st ON r.status_id = st.status_id
+JOIN 
+    dbo.[User] u ON r.realtor_id = u.user_id;
+GO
+/****** Object:  View [dbo].[RealtyView]    Script Date: 18.12.2024 18:34:10 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE VIEW [dbo].[RealtyView]
+AS
+SELECT       r.address, r.cost, r.description, r.quantity_rooms, r.square, r.year_founded, st.status_name, rt.type_name, c.city_name, r.realty_id
+FROM            dbo.Realty AS r INNER JOIN
+                         dbo.StatusType AS st ON r.status_id = st.status_id INNER JOIN
+                         dbo.RealtyType AS rt ON r.type_id = rt.type_id INNER JOIN
+                         dbo.City AS c ON r.city_id = c.city_id
+GO
+/****** Object:  Table [dbo].[FavoriteRealty]    Script Date: 18.12.2024 18:34:10 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[FavoriteRealty](
+	[favorite_id] [int] IDENTITY(1,1) NOT NULL,
+	[user_id] [int] NOT NULL,
+	[realty_id] [int] NOT NULL,
+	[date_added] [datetime] NULL,
+ CONSTRAINT [PK_FavoriteRealty] PRIMARY KEY CLUSTERED 
+(
+	[favorite_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Order]    Script Date: 18.12.2024 18:34:10 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Order](
+	[order_id] [int] IDENTITY(1,1) NOT NULL,
+	[order_date] [datetime] NOT NULL,
+	[client_id] [int] NOT NULL,
+	[realtor_id] [int] NOT NULL,
+	[realty_id] [int] NOT NULL,
+	[transaction_amount] [money] NOT NULL,
+	[status_order] [int] NOT NULL,
+ CONSTRAINT [PK_Order] PRIMARY KEY CLUSTERED 
+(
+	[order_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Region]    Script Date: 18.12.2024 18:34:10 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Region](
+	[region_id] [int] IDENTITY(1,1) NOT NULL,
+	[region_name] [varchar](50) NOT NULL,
+	[city_id] [int] NOT NULL,
+ CONSTRAINT [PK_Region] PRIMARY KEY CLUSTERED 
+(
+	[region_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Role]    Script Date: 18.12.2024 18:34:10 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Role](
+	[role_id] [int] IDENTITY(1,1) NOT NULL,
+	[role_name] [varchar](25) NOT NULL,
+ CONSTRAINT [PK_Role] PRIMARY KEY CLUSTERED 
+(
+	[role_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[Realty] ADD  CONSTRAINT [DF_Realty_StatusID]  DEFAULT ((1)) FOR [status_id]
+GO
+ALTER TABLE [dbo].[Realty] ADD  DEFAULT ((1)) FOR [realtor_id]
+GO
+ALTER TABLE [dbo].[FavoriteRealty]  WITH CHECK ADD  CONSTRAINT [FK_FavoriteRealty_Realty] FOREIGN KEY([realty_id])
+REFERENCES [dbo].[Realty] ([realty_id])
+GO
+ALTER TABLE [dbo].[FavoriteRealty] CHECK CONSTRAINT [FK_FavoriteRealty_Realty]
+GO
+ALTER TABLE [dbo].[FavoriteRealty]  WITH CHECK ADD  CONSTRAINT [FK_FavoriteRealty_User] FOREIGN KEY([user_id])
+REFERENCES [dbo].[User] ([user_id])
+GO
+ALTER TABLE [dbo].[FavoriteRealty] CHECK CONSTRAINT [FK_FavoriteRealty_User]
+GO
+ALTER TABLE [dbo].[Order]  WITH CHECK ADD  CONSTRAINT [FK_Order_Realty] FOREIGN KEY([realty_id])
+REFERENCES [dbo].[Realty] ([realty_id])
+GO
+ALTER TABLE [dbo].[Order] CHECK CONSTRAINT [FK_Order_Realty]
+GO
+ALTER TABLE [dbo].[Order]  WITH CHECK ADD  CONSTRAINT [FK_Order_User] FOREIGN KEY([client_id])
+REFERENCES [dbo].[User] ([user_id])
+GO
+ALTER TABLE [dbo].[Order] CHECK CONSTRAINT [FK_Order_User]
+GO
+ALTER TABLE [dbo].[Order]  WITH CHECK ADD  CONSTRAINT [FK_Order_User1] FOREIGN KEY([realtor_id])
+REFERENCES [dbo].[User] ([user_id])
+GO
+ALTER TABLE [dbo].[Order] CHECK CONSTRAINT [FK_Order_User1]
+GO
+ALTER TABLE [dbo].[Realty]  WITH CHECK ADD  CONSTRAINT [FK_Realty_City] FOREIGN KEY([city_id])
+REFERENCES [dbo].[City] ([city_id])
+GO
+ALTER TABLE [dbo].[Realty] CHECK CONSTRAINT [FK_Realty_City]
+GO
+ALTER TABLE [dbo].[Realty]  WITH CHECK ADD  CONSTRAINT [FK_Realty_RealtyType] FOREIGN KEY([type_id])
+REFERENCES [dbo].[RealtyType] ([type_id])
+GO
+ALTER TABLE [dbo].[Realty] CHECK CONSTRAINT [FK_Realty_RealtyType]
+GO
+ALTER TABLE [dbo].[Realty]  WITH CHECK ADD  CONSTRAINT [FK_Realty_StatusType] FOREIGN KEY([status_id])
+REFERENCES [dbo].[StatusType] ([status_id])
+GO
+ALTER TABLE [dbo].[Realty] CHECK CONSTRAINT [FK_Realty_StatusType]
+GO
+ALTER TABLE [dbo].[Region]  WITH CHECK ADD  CONSTRAINT [FK_Region_City] FOREIGN KEY([city_id])
+REFERENCES [dbo].[City] ([city_id])
+GO
+ALTER TABLE [dbo].[Region] CHECK CONSTRAINT [FK_Region_City]
+GO
+ALTER TABLE [dbo].[User]  WITH CHECK ADD  CONSTRAINT [FK_User_Role] FOREIGN KEY([role_id])
+REFERENCES [dbo].[Role] ([role_id])
+GO
+ALTER TABLE [dbo].[User] CHECK CONSTRAINT [FK_User_Role]
+GO
+/****** Object:  StoredProcedure [dbo].[add_realtor]    Script Date: 18.12.2024 18:34:10 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[add_realtor]
+    @user_surname VARCHAR(50),
+    @user_name VARCHAR(50),
+    @user_patronymic VARCHAR(50),
+    @user_phone VARCHAR(20),
+    @login VARCHAR(50),
+    @password VARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO [User] (
+        [surname],
+        [name],
+        [patronymic],
+        [role_id],
+        [phone],
+        [login],
+        [password]
+    )
+    VALUES (
+        @user_surname,
+        @user_name,
+        @user_patronymic,
+        2,                
+        @user_phone,
+        @login,
+        @password
+    );
+END;
+
+GO
+/****** Object:  StoredProcedure [dbo].[add_user]    Script Date: 18.12.2024 18:34:10 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[add_user]
+    @user_surname VARCHAR(50),
+    @user_name VARCHAR(50),
+    @user_patronymic VARCHAR(50),
+    @user_phone VARCHAR(20),
+    @login VARCHAR(50),
+    @password VARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO [User] (
+        [surname],
+        [name],
+        [patronymic],
+        [role_id],
+        [phone],
+        [login],
+        [password]
+    )
+    VALUES (
+        @user_surname,
+        @user_name,
+        @user_patronymic,
+        1,                
+        @user_phone,
+        @login,
+        @password
+    );
+END;
+
+GO
+/****** Object:  StoredProcedure [dbo].[GetUserFavoriteRealty]    Script Date: 18.12.2024 18:34:10 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ CREATE PROCEDURE [dbo].[GetUserFavoriteRealty]
+    @UserId INT
+AS
+BEGIN
+    SELECT 
+        f.favorite_id AS [Номер избранного],
+        r.description AS [Название недвижимости],
+        f.date_added as [Дата добавления]
+    FROM 
+        [dbo].[FavoriteRealty] AS f
+
+    JOIN 
+        [dbo].[Realty] AS r ON f.realty_id = r.realty_id
+    WHERE 
+        f.user_id = @UserId;
+END
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPane1', @value=N'[0E232FF0-B466-11cf-A24F-00AA00A3EFFF, 1.00]
+Begin DesignProperties = 
+   Begin PaneConfigurations = 
+      Begin PaneConfiguration = 0
+         NumPanes = 4
+         Configuration = "(H (1[40] 4[20] 2[20] 3) )"
+      End
+      Begin PaneConfiguration = 1
+         NumPanes = 3
+         Configuration = "(H (1 [50] 4 [25] 3))"
+      End
+      Begin PaneConfiguration = 2
+         NumPanes = 3
+         Configuration = "(H (1 [50] 2 [25] 3))"
+      End
+      Begin PaneConfiguration = 3
+         NumPanes = 3
+         Configuration = "(H (4 [30] 2 [40] 3))"
+      End
+      Begin PaneConfiguration = 4
+         NumPanes = 2
+         Configuration = "(H (1 [56] 3))"
+      End
+      Begin PaneConfiguration = 5
+         NumPanes = 2
+         Configuration = "(H (2 [66] 3))"
+      End
+      Begin PaneConfiguration = 6
+         NumPanes = 2
+         Configuration = "(H (4 [50] 3))"
+      End
+      Begin PaneConfiguration = 7
+         NumPanes = 1
+         Configuration = "(V (3))"
+      End
+      Begin PaneConfiguration = 8
+         NumPanes = 3
+         Configuration = "(H (1[56] 4[18] 2) )"
+      End
+      Begin PaneConfiguration = 9
+         NumPanes = 2
+         Configuration = "(H (1 [75] 4))"
+      End
+      Begin PaneConfiguration = 10
+         NumPanes = 2
+         Configuration = "(H (1[66] 2) )"
+      End
+      Begin PaneConfiguration = 11
+         NumPanes = 2
+         Configuration = "(H (4 [60] 2))"
+      End
+      Begin PaneConfiguration = 12
+         NumPanes = 1
+         Configuration = "(H (1) )"
+      End
+      Begin PaneConfiguration = 13
+         NumPanes = 1
+         Configuration = "(V (4))"
+      End
+      Begin PaneConfiguration = 14
+         NumPanes = 1
+         Configuration = "(V (2))"
+      End
+      ActivePaneConfig = 0
+   End
+   Begin DiagramPane = 
+      Begin Origin = 
+         Top = 0
+         Left = 0
+      End
+      Begin Tables = 
+         Begin Table = "st"
+            Begin Extent = 
+               Top = 6
+               Left = 250
+               Bottom = 102
+               Right = 424
+            End
+            DisplayFlags = 280
+            TopColumn = 0
+         End
+         Begin Table = "rt"
+            Begin Extent = 
+               Top = 102
+               Left = 250
+               Bottom = 198
+               Right = 424
+            End
+            DisplayFlags = 280
+            TopColumn = 0
+         End
+         Begin Table = "c"
+            Begin Extent = 
+               Top = 138
+               Left = 38
+               Bottom = 234
+               Right = 212
+            End
+            DisplayFlags = 280
+            TopColumn = 0
+         End
+         Begin Table = "r"
+            Begin Extent = 
+               Top = 6
+               Left = 38
+               Bottom = 136
+               Right = 212
+            End
+            DisplayFlags = 280
+            TopColumn = 0
+         End
+      End
+   End
+   Begin SQLPane = 
+   End
+   Begin DataPane = 
+      Begin ParameterDefaults = ""
+      End
+   End
+   Begin CriteriaPane = 
+      Begin ColumnWidths = 11
+         Column = 1440
+         Alias = 2235
+         Table = 1170
+         Output = 720
+         Append = 1400
+         NewValue = 1170
+         SortType = 1350
+         SortOrder = 1410
+         GroupBy = 1350
+         Filter = 1350
+         Or = 1350
+         Or = 1350
+         Or = 1350
+      End
+   End
+End
+' , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'RealtyView'
+GO
+EXEC sys.sp_addextendedproperty @name=N'MS_DiagramPaneCount', @value=1 , @level0type=N'SCHEMA',@level0name=N'dbo', @level1type=N'VIEW',@level1name=N'RealtyView'
+GO
+USE [master]
+GO
+ALTER DATABASE [EstateAgency] SET  READ_WRITE 
+GO
